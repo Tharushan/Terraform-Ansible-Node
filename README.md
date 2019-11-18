@@ -46,7 +46,7 @@ gce_service_account_pem_file_path = # Path to ansible service account json
 gce_project_id = # GCE project name
 ```
 
-Then **export gce.ini environment variable** or run `setup.sh`
+Then **export gce.ini environment variable** or run `source setup.sh`
 
 ```
 export GCE_INI_PATH=$(realpath ./ansible/gce.ini)
