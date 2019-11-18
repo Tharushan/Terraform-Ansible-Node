@@ -1,0 +1,54 @@
+- name: New Instance Installation
+  hosts: "{{ hostname }}"
+  become: true
+  vars:
+    - var_node: /tmp
+    - homeDir: /home/{{ user }}
+    - appDir : app
+  tasks:
+  - name: Node.js | Get script
+    get_url:
+      url: "http://deb.nodesource.com/setup_13.x"
+      dest: "{{ var_node }}/nodejs.sh"
+
+  - name: Node.js | Set execution permission to script
+    file:
+      path: "{{ var_node }}/nodejs.sh"
+      mode: "u+x"
+
+  - name: Node.js | Execute installation script
+    shell: "{{ var_node }}/nodejs.sh"
+
+  - name: Node.js | Remove installation script
+    file:
+      path: "{{ var_node}}/nodejs.sh"
+      state: absent
+
+  - name: Node.js | Install Node.js
+    apt:
+      name:
+        - build-essential
+        - nodejs
+      state: present
+      update_cache: yes
+
+  - name: Install pm2
+    npm: name=pm2 global=yes production=yes state=present
+
+  - name: Node.js app | PM2 requires Node.js to be available as node
+    shell: ln -s /usr/bin/nodejs /usr/bin/node
+    ignore_errors: yes
+
+  - name: Create APP Directory
+    file: path={{homeDir}}/{{appDir}} state=directory
+
+  - name: Copy app
+    copy: src=../app dest={{homeDir}}
+
+  - name: Running NPM install
+    npm: path={{ homeDir }}/{{ appDir }}
+    register: npm_finished
+
+  - name: App launch
+    command: pm2 start index.js --name app chdir={{homeDir}}/{{appDir}}
+    when: npm_finished.changed
