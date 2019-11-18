@@ -15,6 +15,7 @@
     synchronize:
       src: ../app
       dest: "{{ homeDir }}"
+      verify_host: no
       rsync_opts:
         - "--exclude=node_module"
 
